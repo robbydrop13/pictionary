@@ -1,0 +1,44 @@
+@import './../App.scss';
+
+.master-container {
+  padding:20px;
+  background-image: url('./Assets/background-img.png');
+}
+
+.main-container {
+  flex: 1;
+  margin:20px;
+  background-color: #FFFFFF;
+	box-shadow: 0px 4px 4px rgba(12, 15, 210, 0.5);
+	border-radius: 8px;
+}
+
+.container {
+  flex: 1;
+  margin:20px;
+}
+
+.ant-space {
+  display: flex;
+}
+
+.rank {
+  height: 250px;
+}
+
+.drawItem {
+  height: 250px;
+}
+
+.chat {
+  height: 400px;
+}
+
+.drawControls {
+  height: 60px;
+}
+
+.drawArea {
+  height: 590px;
+  cursor: crosshair;
+}

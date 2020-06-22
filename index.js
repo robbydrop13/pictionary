@@ -26,7 +26,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
-app.use(cors(corsOptions));
+//app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 const currentConnections = {};

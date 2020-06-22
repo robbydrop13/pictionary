@@ -1,0 +1,54 @@
+@import './../../index.scss';
+
+.messages {
+  padding: 10px;
+  height: 320px;
+  overflow: scroll;
+	.message .messageText {
+		border-radius: 8px;
+		background: $chat-blue;
+		padding: 8px;
+		flex: 1;
+	}
+	.selfMessage .messageText {
+		border-radius: 8px;
+		background: $chat-green;
+		padding: 8px;
+		flex: 1;
+	}
+	.userTag {
+		position: absolute;
+  		bottom: 0;
+  		left: 0;
+	}
+	.senderMessage {
+		padding-left: 40px;
+		padding-top: 10px;
+	} 
+}
+
+.ant-divider {
+	margin: 15px 0px;
+}
+
+.currentMessage > .ant-form {
+	.ant-form-item {
+		margin: 0px;
+	}
+	.ant-input {
+		border: 0px;
+		outline: none;
+    	border-bottom: 1px solid $gray-light;
+
+	}
+	button {
+		margin-right: 13px;
+		border-radius: 50%;
+		width: 32px;
+		background: $primary-btn-color;
+		border: none;
+		span {
+			transform: rotate(-45deg);
+		}
+	}
+}
