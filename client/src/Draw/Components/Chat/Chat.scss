@@ -4,17 +4,19 @@
   padding: 10px;
   height: 370px;
   overflow: scroll;
-	.message .messageText {
+	.messageText {
 		border-radius: 8px;
-		background: $chat-blue;
 		padding: 8px;
 		flex: 1;
 	}
+	.message .messageText {
+		background: $chat-blue;
+	}
 	.selfMessage .messageText {
-		border-radius: 8px;
 		background: $chat-green;
-		padding: 8px;
-		flex: 1;
+	}
+	.systemMessage .messageText {
+		background: $chat-gray;
 	}
 	.userTag {
 		position: absolute;

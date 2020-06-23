@@ -38,6 +38,17 @@ const Chat = () => {
 
 const Messages = ({messages}) => {
 
+  const messageStyling = (message) => {
+    switch(message.sender.pseudo) {
+      case selfPlayer.pseudo:
+        return "selfMessage";
+      case "Draw!":
+        return "systemMessage";
+      default:
+        return "message";
+    }
+  }
+
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -52,7 +63,7 @@ const Messages = ({messages}) => {
         <Row key={message.id} 
             justify={message.sender.pseudo===selfPlayer.pseudo ? "end" : "start"}>
           <Col span={12}>
-          <div className={message.sender.pseudo===selfPlayer.pseudo ? "selfMessage" : "message"}>
+          <div className={messageStyling(message)}>
             
               <UserTag user={message.sender}></UserTag>
               <div className="senderMessage">

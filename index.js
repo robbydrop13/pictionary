@@ -4,8 +4,8 @@ import socketIO from 'socket.io';
 import cors from 'cors';
 const bodyParser = require('body-parser');
 require('dotenv').config();
-//const mongoose = require('mongoose');
 const _ = require('lodash');
+import { v4 as uuidv4 } from 'uuid';
 
 const whitelist = ['http://localhost:3000'];
 const corsOptions = {
@@ -20,9 +20,6 @@ const corsOptions = {
 
 const app = express();
 
-//mongoose.Promise = global.Promise;
-//mongoose.connect(process.env.MONGODB_URI || `mongodb://localhost:27017/node-react-starter`);
-
 const server = http.createServer(app);
 const io = socketIO(server);
 
@@ -33,6 +30,13 @@ const currentConnections = {};
 var drawerShortList = {};
 const words = ["dog","cat","bird","fish","boat","car","plane"];
 const timer = 10000;
+var currentWord = "";
+const systemSender = {
+	pseudo: "Draw!",
+  score: 0,
+  drawer: false,
+  color: "primaryBlue",
+}
 
 
 const selectDrawer = (obj) => {
@@ -68,15 +72,24 @@ const setNewWord = () => {
 		);
 	}
 
-	
+	// Select and emit new word to the front
+	currentWord = words[Math.floor(Math.random() * words.length)]
 	io.emit('new word', {
-		newWord: words[Math.floor(Math.random() * words.length)], 
+		newWord: currentWord, 
 		newTimer: timer, 
 	});
 
+	// As a new word comes with a new drawer, player update needs to be sent to the front
 	io.emit('players update', Object.values(currentConnections).map(connection => connection.player));
-
+	io.emit('new message', {
+      id: uuidv4(),
+      sender: systemSender,
+      text: "Victoire!!!",
+    });
 }
+
+// Variabiliser les message avec une fonction new message (?) 
+// et envoyer les différents messages admin (machin a rejoint, machin a quitté, machin a gagné next drawer is
 
 var newWordTimer = setInterval(setNewWord, timer);
 
@@ -84,10 +97,11 @@ var newWordTimer = setInterval(setNewWord, timer);
 io.on("connection", socket => {
 
 	console.log("New client connected");
-	currentConnections[socket.id] = { socket: socket };
-	drawerShortList = {...currentConnections};
 
 	socket.on('new player', (player) => {
+		// Add player to the connections here to make sure client has a pseudo and is real user
+		currentConnections[socket.id] = { socket: socket };
+		drawerShortList = {...currentConnections};
 		console.log(player.pseudo + " joined!");
 		currentConnections[socket.id].player = player;
 		var players = Object.values(currentConnections).map(connection => connection.player);
@@ -99,28 +113,15 @@ io.on("connection", socket => {
 
 		// Drawer and player that guesses right both win points
 		console.log(message);
-		if (message.text.includes("bob") && !currentConnections[socket.id].player.drawer) {
+		if (message.text.includes(currentWord) && !currentConnections[socket.id].player.drawer) {
 			console.log("winner!");
 			// Allocating points to the guesser
-			currentConnections[socket.id].player.score = currentConnections[socket.id].player.score + 10;
+			currentConnections[socket.id].player.score += 10;
 			// Allocating points to the drawer
-			
-
-			// je dois trouver le socket id du drawer pour assigner 10 points au drawer, 
-			// puis gérer le vrai mot clé et pas bob pour trouver le score
-			// puis faire les messages pour dire machin WIN et faire la petite anim qu'il marque des points
-			// puis eventuellement laisser quelques secondes avant le tour suivant
-			// puis ajouter le header
-			// puis cleaner le chat qui se reset
-			// puis faire les controls
-			// puis bloquer les controls et le dessin quand l'utilisateur dessine pas
-			// puis mettre en valeur le joueur en gras dans le ranking
-			// puis voir si je met le nombre de joueurs et la personne qui dessine en ce moment
 			var playersConnexions = Object.values(currentConnections).map(connection => (connection));
-			var drawer = playersConnexions.filter(connexion => connexion.player.drawer);
-			drawer.score = drawer.score + 10;
-			console.log(drawer);
-			//drawer.player.score = drawer.player.score + 10;
+			var drawerId = playersConnexions.filter(connexion => connexion.player.drawer)[0].socket.id;
+			currentConnections[drawerId].player.score += 10;
+			
 			setNewWord();
 			clearInterval(newWordTimer);
 			newWordTimer = setInterval(setNewWord, timer);

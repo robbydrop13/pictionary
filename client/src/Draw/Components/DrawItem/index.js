@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
 
-import { selfPlayer, socket } from '../../Helpers';
+import { selfPlayer, socket, isCurrentDrawerContext } from '../../Helpers';
 import './DrawItem.scss';
 
 const ClockContent = ({ remainingTime, word, isCurrentDrawer }) => {
@@ -37,7 +37,8 @@ const ClockContent = ({ remainingTime, word, isCurrentDrawer }) => {
   );
 };
 
-const DrawItem = ({isCurrentDrawer}) => {
+const DrawItem = () => {
+  const isCurrentDrawer = React.useContext(isCurrentDrawerContext);
 	const [word, setWord] = useState("");
   const [timer, setTimer] = useState(8);
   const [countdownKey, setCountdownKey] = useState(1);
