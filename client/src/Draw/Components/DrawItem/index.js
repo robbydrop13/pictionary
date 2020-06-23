@@ -1,55 +1,70 @@
 import React, { useState, useEffect } from "react";
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
 
-import { socket } from '../../Helpers';
+import { selfPlayer, socket } from '../../Helpers';
 import './DrawItem.scss';
 
-const ClockContent = ({ remainingTime, word }) => {
-  if (remainingTime === 0) {
-    return <div className="timer">Waiting for new game...</div>;
+const ClockContent = ({ remainingTime, word, isCurrentDrawer }) => {
+
+  if (word === "") {
+    return (
+      <div className="timer">
+        <div className="waitText">Waiting for next game</div>
+      </div>
+    );
+  }
+
+  if (word === "XTRANSITION") {
+    return (
+      <div className="timer">
+        <div className="waitText">XXX</div>
+      </div>
+    );
+  }
+  
+  if (isCurrentDrawer) {
+    return (
+      <div className="timer">
+        <div className="text">{word.toUpperCase()}</div>
+      </div>
+    );
   }
 
   return (
-    <div className="timer">
-      <div className="text">{word}</div>
-    </div>
+      <div className="timer">
+        <div className="waitText">Time to guess!</div>
+      </div>
   );
 };
 
-const DrawItem = () => {
+const DrawItem = ({isCurrentDrawer}) => {
 	const [word, setWord] = useState("");
-  const [timer, setTimer] = useState();
+  const [timer, setTimer] = useState(8);
+  const [countdownKey, setCountdownKey] = useState(1);
+  //const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
-    socket.on('new word', ({newWord, timer}) => {
+    socket.on('new word', ({newWord, newTimer}) => {
+      //setIsPlaying(true);
       setWord(newWord);
-      setTimer(timer);
+      setTimer(newTimer/1000 - 1);
+      setCountdownKey(prevCountdownKey => prevCountdownKey + 1);
       console.log(newWord);
-      console.log(timer);
+      console.log(countdownKey);
       });
-  }, []);
-
-  useEffect(() => {
-    setInterval(() => { 
-      setTimer(prevTimer => prevTimer - 1000);
-    }, 1000);
   }, []);
 
   return (
 	  <div className="drawItem container">
-	    <div className="timer"> 
-        { isNaN(timer) &&
-          <div>Wait next game</div> }
-        { !isNaN(timer) &&
+      <div className="timer-wrapper"> 
           <CountdownCircleTimer
           isPlaying
-          duration={10}
+          duration={timer}
           colors={[['#59DD4D', 0.4], ['#59DD4D', 0.4], ['#EF094E']]}
+          key={countdownKey}
           >
-            <ClockContent word={word}></ClockContent>
+            <ClockContent word={word} isCurrentDrawer={isCurrentDrawer}></ClockContent>
           </CountdownCircleTimer>
-        }
-        
       </div>
 	  </div>
   );

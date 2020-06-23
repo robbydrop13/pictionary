@@ -7,10 +7,10 @@ import { UserTag } from './../Commons';
 const Rank = ({players}) => {
   const compare = ( a, b ) => {
     if ( a.score < b.score ){
-      return -1;
+      return 1;
     }
     if ( a.score > b.score ){
-      return 1;
+      return -1;
     }
     return 0;
   }

@@ -38,7 +38,7 @@ const Draw = () => {
         <Space direction="vertical" size={0}>
             <Row>
               <Col span={12}>
-                <DrawItem> 
+                <DrawItem isCurrentDrawer={isCurrentDrawer}> 
                 </DrawItem>
               </Col>
               <Col span={12}>
