@@ -1,1 +1,9 @@
 @import './../../index.scss';
+
+.drawControl {
+	padding-left: 20px;
+	padding-top: 15px;
+	.drawControlLabel {
+		padding-bottom: 6px;
+	}
+}
