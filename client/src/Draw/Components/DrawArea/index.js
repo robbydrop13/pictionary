@@ -4,7 +4,7 @@ import { socket } from '../../Helpers';
 import './DrawArea.scss';
 
 
-const DrawArea = () => {
+const DrawArea = ({controls}) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [lines, setLines] = useState(new Immutable.List());
   const drawArea = useRef();
@@ -21,6 +21,10 @@ const DrawArea = () => {
          prevLines.updateIn([prevLines.size - 1], line => line.push(point))
       );
     });
+    return () => {
+      socket.off('drawing mouse down');
+      socket.off('drawing mouse move');
+    };
   },[]);
 
   const handleMouseDown = (mouseEvent) => {
@@ -59,29 +63,35 @@ const DrawArea = () => {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        style={{ "background": `rgb(${controls.background.r},${controls.background.g},${controls.background.b},${controls.background.a}` }}
       >
-       <Drawing lines = {lines} ></Drawing>
+       <Drawing lines = {lines} controls={controls}></Drawing>
       </div>
   )
 }
 
-const Drawing = ({lines}) => {
+const Drawing = ({lines, controls}) => {
   return (
     <svg className="drawing">
       {lines && lines.map((line, index) => (
-        <DrawingLine key={index} line={line} />
+        <DrawingLine key={index} line={line} controls={controls}/>
       ))}
     </svg>
   )
 }
 
-const DrawingLine = ({line}) => {
+const DrawingLine = ({line, controls}) => {
   const pathData = "M " + line.map(p => {
     return `${p.get('x')} ${p.get('y')}`;
   })
   .join(" L ");
 
-  return <path className="path" d={pathData} />; 
+  return <path 
+          className="path" d={pathData} 
+          style={{ "stroke": `rgb(${controls.brushColor.r},${controls.brushColor.g},${controls.brushColor.b},${controls.brushColor.a}`, "strokeWidth": controls.brushSize }}
+        />; 
 }
+
+// faire que les controls soient rattachés à un path unique à chaque fois.
 
 export default DrawArea;

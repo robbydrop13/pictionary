@@ -7,7 +7,7 @@ require('dotenv').config();
 const _ = require('lodash');
 import { v4 as uuidv4 } from 'uuid';
 
-const whitelist = ['http://localhost:3000'];
+const whitelist = ['http://localhost:3000', 'http://localhost:3000/draw'];
 const corsOptions = {
   credentials: true, // This is important.
   origin: (origin, callback) => {
@@ -99,14 +99,16 @@ io.on("connection", socket => {
 	console.log("New client connected");
 
 	socket.on('new player', (player) => {
-		// Add player to the connections here to make sure client has a pseudo and is real user
-		currentConnections[socket.id] = { socket: socket };
-		drawerShortList = {...currentConnections};
-		console.log(player.pseudo + " joined!");
-		currentConnections[socket.id].player = player;
-		var players = Object.values(currentConnections).map(connection => connection.player);
-		console.log(players.length + " players online.");
-		io.emit('players update', players);
+		if (player !== null && player !== {}) {
+			// Add player to the connections here to make sure client has a pseudo and is real user
+			currentConnections[socket.id] = { socket: socket };
+			drawerShortList = {...currentConnections};
+			console.log(player.pseudo + " joined!");
+			currentConnections[socket.id].player = player;
+			var players = Object.values(currentConnections).map(connection => connection.player);
+			console.log(players.length + " players online.");
+			io.emit('players update', players);
+		}
 	});
 
 	socket.on('new message', (message) => {

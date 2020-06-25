@@ -25,6 +25,9 @@ const Chat = () => {
     socket.on('new message', (message) => {
       setMessages(prevMessages => prevMessages.concat(message));
     });
+    return () => {
+      socket.off('new message');
+    };
   }, []);
 
   return (
@@ -52,7 +55,7 @@ const Messages = ({messages}) => {
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
-    messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
+    setTimeout(messagesEndRef.current.scrollIntoView({ behavior: "smooth" }), 1000);
   }
 
   useEffect(scrollToBottom, [messages]);
@@ -86,11 +89,16 @@ const Messages = ({messages}) => {
 const CurrentMessage = ({sendMessage}) => {
   const [form] = Form.useForm();
   
+const onFinish = (value) => {
+  sendMessage(value);
+  form.resetFields();
+}
+
   return (
     <div className="currentMessage">
       <Form
         form={form}
-        onFinish={sendMessage}
+        onFinish={onFinish}
         layout="inline"
       >
         <Form.Item name="text"
@@ -103,7 +111,6 @@ const CurrentMessage = ({sendMessage}) => {
         <Button
           type="primary" 
           htmlType="submit"
-          //onClick={form.resetFields()}
         ><SendOutlined style={{ position: "absolute", top: 7, left: 11 }}/></Button>
         </Form.Item>
       </Form> 

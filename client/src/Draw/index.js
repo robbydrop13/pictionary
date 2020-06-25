@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useReducer, useEffect } from "react";
 import { Space, Row, Col } from 'antd';
 import _ from 'lodash';
 import './index.scss';
 
-import { socket, selfPlayer, isCurrentDrawerContext } from './Helpers';
+import { socket, selfPlayer, isCurrentDrawerContext, controlsReducer } from './Helpers';
 
 import DrawControls from './Components/DrawControls'
 import Chat from './Components/Chat'
@@ -16,7 +16,14 @@ socket.emit('new player', selfPlayer);
 const Draw = () => { 
   const [players, setPlayers] = useState([selfPlayer]);
   const [isCurrentDrawer, setIsCurrentDrawer] = useState(false);
-  
+
+  const initialControls = { 
+    brushColor: { r: 0, g: 0, b: 0, a: 1 }, 
+    brushSize: 3,
+    background: { r: 255, g: 255, b: 255, a: 1}
+  };
+
+  const [controls, controlsDispatch] = useReducer(controlsReducer, initialControls);
 
   useEffect(() => {
     socket.on('players update', (liveplayers) => {
@@ -30,6 +37,9 @@ const Draw = () => {
         }
       }
     });
+    return () => {
+      socket.off('players update');
+    };
   }, []);
 
   return (
@@ -57,9 +67,13 @@ const Draw = () => {
         </Col>
         <Col span={14}>
           <Space direction="vertical" size={0}>
-            <DrawControls players={players}>
+            <DrawControls 
+              players={players} 
+              controls={controls}
+              controlsDispatch={controlsDispatch}
+            >
             </DrawControls>
-            <DrawArea>
+            <DrawArea controls={controls}>
             </DrawArea>
           </Space>
         </Col>

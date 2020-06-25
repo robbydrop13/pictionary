@@ -53,6 +53,9 @@ const DrawItem = () => {
       console.log(newWord);
       console.log(countdownKey);
       });
+    return () => {
+      socket.off('new word');
+    };
   }, []);
 
   return (
