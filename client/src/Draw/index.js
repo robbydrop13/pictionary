@@ -35,15 +35,18 @@ const Draw = () => {
   return (
     <div className="master-container">
     <isCurrentDrawerContext.Provider value={isCurrentDrawer}>
+      <Row style={{'height':40}}>
+        Hello
+      </Row>
       <Row>
         <Col span={10}>
           <Space direction="vertical" size={0}>
-              <Row>
-                <Col span={12}>
+              <Row justify="space-around" align="top" style={{'height':200}}>
+                <Col span={10}>
                   <DrawItem> 
                   </DrawItem>
                 </Col>
-                <Col span={12}>
+                <Col span={10}>
                   <Rank players={players} >
                   </Rank>
                 </Col>
@@ -54,7 +57,7 @@ const Draw = () => {
         </Col>
         <Col span={14}>
           <Space direction="vertical" size={0}>
-            <DrawControls>
+            <DrawControls players={players}>
             </DrawControls>
             <DrawArea>
             </DrawArea>

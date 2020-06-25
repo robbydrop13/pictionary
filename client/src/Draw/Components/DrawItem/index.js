@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
 
-import { selfPlayer, socket, isCurrentDrawerContext } from '../../Helpers';
+import { socket, isCurrentDrawerContext } from '../../Helpers';
 import './DrawItem.scss';
 
 const ClockContent = ({ remainingTime, word, isCurrentDrawer }) => {
@@ -56,7 +56,7 @@ const DrawItem = () => {
   }, []);
 
   return (
-	  <div className="drawItem container">
+	  <div className="container">
       <div className="timer-wrapper"> 
           <CountdownCircleTimer
           isPlaying

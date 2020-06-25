@@ -20,10 +20,10 @@ export function controlsReducer(controls, action) {
   switch (action.type) {
     case 'BRUSH_COLOR':
     	return { ...controls, brushColor: action.payload.control};
-    case 'BRUSH_SIZE':
-    	return { ...controls, brushSize: action.payload.control};
     case 'BACKGROUND':
     	return { ...controls, background: action.payload.control};
+    case 'BRUSH_SIZE':
+      return { ...controls, brushSize: action.payload.control};
     default:
       throw new Error();
   }

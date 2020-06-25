@@ -17,11 +17,11 @@ const Rank = ({players}) => {
   }
 
   return (
-    <div className="rank container">
+    <div className="container">
       { players.sort(compare).slice(0,5).map((user, index) =>
         <div className="userRank" key={user.pseudo}>
           <UserTag user={user}></UserTag>
-          <span className="userScore" style={{ "font-weight": selfPlayer.pseudo === user.pseudo ? "bold" : "normal"}} >{user.pseudo} - {user.score}</span><StarFilled className="scoreIcon" />
+          <span className="userScore" style={{ "fontWeight": selfPlayer.pseudo === user.pseudo ? "bold" : "normal"}} >{user.pseudo} - {user.score}</span><StarFilled className="scoreIcon" />
         </div>
       )}
     </div>
