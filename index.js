@@ -113,34 +113,44 @@ io.on("connection", socket => {
 
 	socket.on('new message', (message) => {
 
-		// Drawer and player that guesses right both win points
-		console.log(message);
-		if (message.text.includes(currentWord) && !currentConnections[socket.id].player.drawer) {
-			console.log("winner!");
-			// Allocating points to the guesser
-			currentConnections[socket.id].player.score += 10;
-			// Allocating points to the drawer
+		if (currentConnections[socket.id] !== undefined) {
+
 			var playersConnexions = Object.values(currentConnections).map(connection => (connection));
-			var drawerId = playersConnexions.filter(connexion => connexion.player.drawer)[0].socket.id;
-			currentConnections[drawerId].player.score += 10;
-			
-			setNewWord();
-			clearInterval(newWordTimer);
-			newWordTimer = setInterval(setNewWord, timer);
+			console.log(playersConnexions.filter(connexion => connexion.player.drawer));
+			// Drawer and player that guesses right both win points
+			console.log(message);
+			if (message.text.includes(currentWord) 
+				&& !currentConnections[socket.id].player.drawer 
+				&& !_.isEmpty(playersConnexions.filter(connexion => connexion.player.drawer))) {
+				console.log("winner!");
+				// Allocating points to the guesser
+				currentConnections[socket.id].player.score += 10;
+				// Allocating points to the drawer
+				var drawerId = playersConnexions.filter(connexion => connexion.player.drawer)[0].socket.id;
+				currentConnections[drawerId].player.score += 10;
+				
+				setNewWord();
+				clearInterval(newWordTimer);
+				newWordTimer = setInterval(setNewWord, timer);
+			}
+			socket.broadcast.emit('new message', message);
+
 		}
-		socket.broadcast.emit('new message', message);
 	});
     
 
     socket.on('drawing mouse down', (point) => {
-		console.log("drawing mouse down");
-		console.log(socket);
-		socket.broadcast.emit('drawing mouse down', point)
+    if (currentConnections[socket.id] !== undefined) {
+			console.log("drawing mouse down");
+			socket.broadcast.emit('drawing mouse down', point)
+		}
 	});
 
 	socket.on('drawing mouse move', (point) => {
-		console.log("drawing mouse move");
-		socket.broadcast.emit('drawing mouse move', point)
+		if (currentConnections[socket.id] !== undefined) {
+			console.log("drawing mouse move");
+			socket.broadcast.emit('drawing mouse move', point)
+		}
 	});
 
     //A special namespace "disconnect" for when a client disconnects

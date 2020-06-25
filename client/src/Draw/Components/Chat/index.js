@@ -52,10 +52,10 @@ const Messages = ({messages}) => {
     }
   }
 
-  const messagesEndRef = useRef(null)
+  const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
-    setTimeout(messagesEndRef.current.scrollIntoView({ behavior: "smooth" }), 1000);
+    setTimeout(() => messagesEndRef.current.scrollIntoView({ behavior: "smooth" }), 200);
   }
 
   useEffect(scrollToBottom, [messages]);
@@ -88,11 +88,13 @@ const Messages = ({messages}) => {
 
 const CurrentMessage = ({sendMessage}) => {
   const [form] = Form.useForm();
+  const messageInput = useRef(null);
   
-const onFinish = (value) => {
-  sendMessage(value);
-  form.resetFields();
-}
+  const onFinish = (value) => {
+    sendMessage(value);
+    form.resetFields();
+    messageInput.current.focus()
+  }
 
   return (
     <div className="currentMessage">
@@ -105,7 +107,7 @@ const onFinish = (value) => {
         wrapperCol={{ sm: 24 }} style={{ flex: "auto", paddingRight: 20, marginLeft: 13 }}
         rules={[{ required: true, message: ' ' }]}
         >
-          <Input />
+          <Input ref={messageInput}/>
         </Form.Item>
         <Form.Item>
         <Button
