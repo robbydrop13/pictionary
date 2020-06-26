@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import Immutable from 'immutable';
-import { socket } from '../../Helpers';
+import { socket, isCurrentDrawerContext, controlsContext } from '../../Helpers';
 import './DrawArea.scss';
 
 
-const DrawArea = ({controls}) => {
+const DrawArea = () => {
+  const {controls, controlsDispatch} = useContext(controlsContext);
   const [isDrawing, setIsDrawing] = useState(false);
   const [lines, setLines] = useState(new Immutable.List());
   const drawArea = useRef();
@@ -65,22 +66,23 @@ const DrawArea = ({controls}) => {
         onMouseUp={handleMouseUp}
         style={{ "background": `rgb(${controls.background.r},${controls.background.g},${controls.background.b},${controls.background.a}` }}
       >
-       <Drawing lines = {lines} controls={controls}></Drawing>
+       <Drawing lines = {lines}></Drawing>
       </div>
   )
 }
 
-const Drawing = ({lines, controls}) => {
+const Drawing = ({lines}) => {
   return (
     <svg className="drawing">
       {lines && lines.map((line, index) => (
-        <DrawingLine key={index} line={line} controls={controls}/>
+        <DrawingLine key={index} line={line}/>
       ))}
     </svg>
   )
 }
 
-const DrawingLine = ({line, controls}) => {
+const DrawingLine = ({line}) => {
+  const {controls, controlsDispatch} = React.useContext(controlsContext);
   const pathData = "M " + line.map(p => {
     return `${p.get('x')} ${p.get('y')}`;
   })

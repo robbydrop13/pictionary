@@ -14,7 +14,7 @@ export const selfPlayer = {
   color: colors[Math.floor(Math.random() * colors.length)],
 };
 
-export const isCurrentDrawerContext = React.createContext(null);
+export const controlsContext = React.createContext(null);
 
 export function controlsReducer(controls, action) {
   switch (action.type) {
@@ -24,6 +24,19 @@ export function controlsReducer(controls, action) {
     	return { ...controls, background: action.payload.control};
     case 'BRUSH_SIZE':
       return { ...controls, brushSize: action.payload.control};
+    default:
+      throw new Error();
+  }
+}
+
+export const isCurrentDrawerContext = React.createContext(null);
+
+export function isCurrentDrawerReducer(isCurrentDrawer, action) {
+  switch (action.type) {
+    case "SET_DRAWER":
+      return isCurrentDrawer = true;
+    case "SET_NOT_DRAWER":
+      return isCurrentDrawer = false;
     default:
       throw new Error();
   }

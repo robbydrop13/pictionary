@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useContext} from "react";
 import { Space, Row, Col, Select, Badge } from 'antd';
 import _ from 'lodash';
 import './DrawControls.scss';
-import { isCurrentDrawerContext } from '../../Helpers';
+import { isCurrentDrawerContext, controlsContext } from '../../Helpers';
 import { ColorPicker, UserTag } from './../Commons';
 
 const { Option } = Select;
 
-const DrawControls = ({players, controls, controlsDispatch}) => {
-	const isCurrentDrawer = React.useContext(isCurrentDrawerContext);
+const DrawControls = ({players}) => {
+	const isCurrentDrawer = useContext(isCurrentDrawerContext);
+	const {controls, controlsDispatch} = useContext(controlsContext);
 	const currentDrawer = players.filter(player => player.drawer);
 
 	const onBrushColorChange = (color) => {
@@ -49,8 +50,10 @@ const DrawControls = ({players, controls, controlsDispatch}) => {
 	 							<div>Brush Size</div>
 	 							<Select defaultValue={controls.brushSize} style={{ width: 64}} bordered={false} onChange={onBrushSizeChange}>
 	 								<Option value={1}><span><Badge count={1}></Badge></span></Option>
-	 								<Option value={2}><span><Badge count={2}></Badge></span></Option>
-	 								<Option value={3}><span><Badge count={3}></Badge></span></Option>
+	 								<Option value={3}><span><Badge count={2}></Badge></span></Option>
+	 								<Option value={5}><span><Badge count={3}></Badge></span></Option>
+	 								<Option value={7}><span><Badge count={4}></Badge></span></Option>
+	 								<Option value={9}><span><Badge count={5}></Badge></span></Option>
 	 							</Select> 
 			 				</Space>
 	 				</Col>
