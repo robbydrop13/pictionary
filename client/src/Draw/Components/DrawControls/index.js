@@ -2,7 +2,7 @@ import React, { useContext} from "react";
 import { Space, Row, Col, Select, Badge } from 'antd';
 import _ from 'lodash';
 import './DrawControls.scss';
-import { isCurrentDrawerContext, controlsContext } from '../../Helpers';
+import { socket, isCurrentDrawerContext, controlsContext } from '../../Helpers';
 import { ColorPicker, UserTag } from './../Commons';
 
 const { Option } = Select;
@@ -14,14 +14,17 @@ const DrawControls = ({players}) => {
 
 	const onBrushColorChange = (color) => {
     controlsDispatch({type: 'BRUSH_COLOR', payload: { control: color.rgb}});
+    socket.emit('change brush color control', color);
   };
   
   const onBackgroundChange = (color) => {
     controlsDispatch({type: 'BACKGROUND', payload: { control: color.rgb}});
+    socket.emit('change background control', color);
   };
 
   const onBrushSizeChange = (size) => {
     controlsDispatch({type: 'BRUSH_SIZE', payload: { control: size}});
+    socket.emit('change brush color size', size);
   };
 
   return (	

@@ -6,13 +6,15 @@ import './DrawArea.scss';
 
 const DrawArea = () => {
   const {controls, controlsDispatch} = useContext(controlsContext);
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [lineControls, setLineControls] = useState([]);
   const [lines, setLines] = useState(new Immutable.List());
+  const [isDrawing, setIsDrawing] = useState(false);
   const drawArea = useRef();
 
   useEffect(() => {
     socket.on('drawing mouse down', (p) => {
       const point = new Immutable.Map({ x: p.x, y: p.y, });
+      setLineControls(prevLineControls => prevLineControls.concat([controls]));
       setLines(prevLines => prevLines.push(new Immutable.List([point, point])));
     });
 
@@ -22,14 +24,35 @@ const DrawArea = () => {
          prevLines.updateIn([prevLines.size - 1], line => line.push(point))
       );
     });
-    return () => {
+  return () => {
       socket.off('drawing mouse down');
       socket.off('drawing mouse move');
+    };
+  },[controls]);
+
+  useEffect(() => {
+    socket.on('change brush color control', (color) => {  
+      controlsDispatch({type: 'BRUSH_COLOR', payload: { control: color.rgb}});
+    });
+
+    socket.on('change background control', (color) => {  
+      controlsDispatch({type: 'BACKGROUND', payload: { control: color.rgb}});
+    });
+
+    socket.on('change brush size control', (size) => {  
+      controlsDispatch({type: 'BRUSH_SIZE', payload: { control: size}});
+    });
+
+    return () => {
+      socket.off('change brush color control');
+      socket.off('change background control');
+      socket.off('change brush size control');
     };
   },[]);
 
   const handleMouseDown = (mouseEvent) => {
     const point = relativeCoordinatesForEvent(mouseEvent);
+    setLineControls(prevLineControls => prevLineControls.concat([controls]));
     setLines(prevLines => prevLines.push(new Immutable.List([point, point])));
     setIsDrawing(true);
     socket.emit('drawing mouse down', point);
@@ -66,23 +89,22 @@ const DrawArea = () => {
         onMouseUp={handleMouseUp}
         style={{ "background": `rgb(${controls.background.r},${controls.background.g},${controls.background.b},${controls.background.a}` }}
       >
-       <Drawing lines = {lines}></Drawing>
+       <Drawing lines={lines} lineControls={lineControls}></Drawing>
       </div>
   )
 }
 
-const Drawing = ({lines}) => {
+const Drawing = ({lines, lineControls}) => {
   return (
     <svg className="drawing">
       {lines && lines.map((line, index) => (
-        <DrawingLine key={index} line={line}/>
+        <DrawingLine key={index} line={line} lineControl={lineControls[index]}/>
       ))}
     </svg>
   )
 }
 
-const DrawingLine = ({line}) => {
-  const {controls, controlsDispatch} = React.useContext(controlsContext);
+const DrawingLine = ({line, lineControl}) => {
   const pathData = "M " + line.map(p => {
     return `${p.get('x')} ${p.get('y')}`;
   })
@@ -90,10 +112,8 @@ const DrawingLine = ({line}) => {
 
   return <path 
           className="path" d={pathData} 
-          style={{ "stroke": `rgb(${controls.brushColor.r},${controls.brushColor.g},${controls.brushColor.b},${controls.brushColor.a}`, "strokeWidth": controls.brushSize }}
+          style={{ "stroke": `rgb(${lineControl.brushColor.r},${lineControl.brushColor.g},${lineControl.brushColor.b},${lineControl.brushColor.a}`, "strokeWidth": lineControl.brushSize }}
         />; 
 }
-
-// faire que les controls soient rattachés à un path unique à chaque fois.
 
 export default DrawArea;

@@ -138,6 +138,26 @@ io.on("connection", socket => {
 		}
 	});
     
+    socket.on('change brush color control', (color) => {
+    if (currentConnections[socket.id] !== undefined) {
+			console.log("change brush color control");
+			socket.broadcast.emit('change brush color control', color)
+		}
+	});
+
+    socket.on('change background control', (color) => {
+    if (currentConnections[socket.id] !== undefined) {
+			console.log("change background control");
+			socket.broadcast.emit('change background control', color)
+		}
+	});
+
+	socket.on('change brush size control', (color) => {
+    if (currentConnections[socket.id] !== undefined) {
+			console.log("change brush size control");
+			socket.broadcast.emit('change brush size control', size)
+		}
+	});
 
     socket.on('drawing mouse down', (point) => {
     if (currentConnections[socket.id] !== undefined) {
