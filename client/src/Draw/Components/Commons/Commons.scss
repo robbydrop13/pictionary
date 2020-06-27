@@ -1,0 +1,40 @@
+@import './../../index.scss';
+
+.userTag {
+	color:white;
+	border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    padding: 3px;
+    text-align: center;
+    float:left;
+}
+
+.yellowTag {
+	background: $yellow-main;
+}
+.orangeTag {
+	background: $orange-main;
+}
+.redTag {
+	background: $red-main;
+}
+.blueTag {
+	background: $blue-main;
+}
+.greenTag {
+	background: $green-main;
+}
+.primaryBlueTag {
+	background: $primary-btn-color;
+} 
+
+.userScore {
+	color: white;
+	margin:0px 8px;
+	font-size: 15px;
+}
+
+.scoreIcon {
+	color: $yellow-main;
+}

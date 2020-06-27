@@ -1,9 +1,19 @@
 import React, { useState } from 'react';
-import reactCSS from 'reactcss';
+import { selfPlayer } from '../../Helpers';
 import { SketchPicker } from 'react-color';
+import { StarFilled } from '@ant-design/icons';
+import reactCSS from 'reactcss';
+import './Commons.scss';
 
 export const UserTag = ({user}) => (
 	<div className={`userTag ${user.color}Tag`}> {user.pseudo.charAt(0).toUpperCase()}</div>
+);
+
+export const UserLabel = ({user}) => (
+  <div>
+      <UserTag user={user}></UserTag>
+      <span className="userScore" style={{ "fontWeight": selfPlayer.pseudo === user.pseudo ? "bold" : "normal"}} >{user.pseudo} - {user.score}</span><StarFilled className="scoreIcon" />
+  </div>
 );
 
 export const ColorPicker = ({handleChange, color}) => {

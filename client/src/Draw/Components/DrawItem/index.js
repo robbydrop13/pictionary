@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { socket, isCurrentDrawer, playersContext, controlsContext } from '../../Helpers';
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
-
-import { socket, isCurrentDrawerContext } from '../../Helpers';
 import './DrawItem.scss';
 
 const ClockContent = ({ remainingTime, word, isCurrentDrawer }) => {
@@ -38,7 +37,8 @@ const ClockContent = ({ remainingTime, word, isCurrentDrawer }) => {
 };
 
 const DrawItem = () => {
-  const isCurrentDrawer = React.useContext(isCurrentDrawerContext);
+  const players = useContext(playersContext);
+  const {controlsDispatch} = useContext(controlsContext);
 	const [word, setWord] = useState("");
   const [timer, setTimer] = useState(8);
   const [countdownKey, setCountdownKey] = useState(1);
@@ -50,6 +50,7 @@ const DrawItem = () => {
       setWord(newWord);
       setTimer(newTimer/1000 - 1);
       setCountdownKey(prevCountdownKey => prevCountdownKey + 1);
+      controlsDispatch({type: 'CLEAR_CANVAS'});
       console.log(newWord);
       console.log(countdownKey);
       });
@@ -67,7 +68,7 @@ const DrawItem = () => {
           colors={[['#59DD4D', 0.4], ['#59DD4D', 0.4], ['#EF094E']]}
           key={countdownKey}
           >
-            <ClockContent word={word} isCurrentDrawer={isCurrentDrawer}></ClockContent>
+            <ClockContent word={word} isCurrentDrawer={isCurrentDrawer(players)}></ClockContent>
           </CountdownCircleTimer>
       </div>
 	  </div>

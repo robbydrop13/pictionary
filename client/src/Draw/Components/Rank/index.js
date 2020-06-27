@@ -1,11 +1,10 @@
-import React from "react";
-import { StarFilled } from '@ant-design/icons';
-
+import React, {useContext} from "react";
+import { playersContext } from '../../Helpers';
+import { UserLabel } from './../Commons';
 import './Rank.scss';
-import { UserTag } from './../Commons';
-import { selfPlayer } from '../../Helpers';
 
-const Rank = ({players}) => {
+const Rank = () => {
+  const players = useContext(playersContext);
   const compare = ( a, b ) => {
     if ( a.score < b.score ){
       return 1;
@@ -19,9 +18,9 @@ const Rank = ({players}) => {
   return (
     <div className="container">
       { players.sort(compare).slice(0,5).map((user, index) =>
-        <div className="userRank" key={user.pseudo}>
-          <UserTag user={user}></UserTag>
-          <span className="userScore" style={{ "fontWeight": selfPlayer.pseudo === user.pseudo ? "bold" : "normal"}} >{user.pseudo} - {user.score}</span><StarFilled className="scoreIcon" />
+        <div key={user.pseudo} style={{'marginBottom':8}}>
+          <UserLabel user={user}>
+          </UserLabel>
         </div>
       )}
     </div>

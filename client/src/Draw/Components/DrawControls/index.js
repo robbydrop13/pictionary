@@ -1,14 +1,14 @@
 import React, { useContext} from "react";
-import { Space, Row, Col, Select, Badge } from 'antd';
 import _ from 'lodash';
-import './DrawControls.scss';
-import { socket, isCurrentDrawerContext, controlsContext } from '../../Helpers';
+import { socket, isCurrentDrawer, playersContext, controlsContext } from '../../Helpers';
+import { Space, Row, Col, Select, Badge, Button } from 'antd';
 import { ColorPicker, UserTag } from './../Commons';
+import './DrawControls.scss';
 
 const { Option } = Select;
 
-const DrawControls = ({players}) => {
-	const isCurrentDrawer = useContext(isCurrentDrawerContext);
+const DrawControls = () => {
+	const players = useContext(playersContext);
 	const {controls, controlsDispatch} = useContext(controlsContext);
 	const currentDrawer = players.filter(player => player.drawer);
 
@@ -24,15 +24,20 @@ const DrawControls = ({players}) => {
 
   const onBrushSizeChange = (size) => {
     controlsDispatch({type: 'BRUSH_SIZE', payload: { control: size}});
-    socket.emit('change brush color size', size);
+    socket.emit('change brush size control', size);
   };
+
+  const onClearCanvas = () => {
+  	controlsDispatch({type: 'CLEAR_CANVAS'});
+  	socket.emit('clear canvas');
+  }
 
   return (	
  		<div className="main-container">
  			
- 			{isCurrentDrawer ? ( 
+ 			{isCurrentDrawer(players) ? ( 
  				<Row justify="space-around" align="middle" style={{'height':60}}>
-	 				<Col span={6}>
+	 				<Col span={5}>
 	 					<Space direction="horizontal" align="center">
 	 						<div>Brush Color</div>
 	 						<div style={{'marginTop':6}} >
@@ -40,7 +45,7 @@ const DrawControls = ({players}) => {
 			 				</div>
 			 			</Space>
 	 				</Col>
-	 				<Col span={6}>
+	 				<Col span={5}>
 	 					<Space direction="horizontal" align="center">
 	 						<div>Background</div>
 	 						<div style={{'marginTop':6}} >
@@ -48,7 +53,7 @@ const DrawControls = ({players}) => {
 			 				</div>
 			 			</Space>
 	 				</Col>
-	 				<Col span={6}>
+	 				<Col span={5}>
 	 						<Space direction="horizontal" align="center">
 	 							<div>Brush Size</div>
 	 							<Select defaultValue={controls.brushSize} style={{ width: 64}} bordered={false} onChange={onBrushSizeChange}>
@@ -60,10 +65,17 @@ const DrawControls = ({players}) => {
 	 							</Select> 
 			 				</Space>
 	 				</Col>
+	 				<Col span={5}>
+	 						<Space direction="horizontal" align="center">
+	 							<Button style={{ width: 64}} type="link" onClick={onClearCanvas}>
+	 								Clear Canvas
+	 							</Button> 
+			 				</Space>
+	 				</Col>
  				</Row>
  			) : ( 
  				<Row justify="space-around" align="middle" style={{'height':60}}>
- 						{ !_.isEmpty(currentDrawer) && !isCurrentDrawer && 
+ 						{ !_.isEmpty(currentDrawer) && !isCurrentDrawer(players) && 
  							<Space direction="horizontal" align="center">
  								<UserTag user={currentDrawer[0]}></UserTag>
  								<span style={{ "fontSize":15, "marginLeft": 8}}>{currentDrawer[0].pseudo} is drawing...</span>

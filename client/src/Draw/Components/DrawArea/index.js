@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Immutable from 'immutable';
-import { socket, isCurrentDrawerContext, controlsContext } from '../../Helpers';
+import { socket, isCurrentDrawer, playersContext, controlsContext } from '../../Helpers';
 import './DrawArea.scss';
 
-
 const DrawArea = () => {
+  const players = useContext(playersContext);
   const {controls, controlsDispatch} = useContext(controlsContext);
   const [lineControls, setLineControls] = useState([]);
   const [lines, setLines] = useState(new Immutable.List());
@@ -24,6 +24,11 @@ const DrawArea = () => {
          prevLines.updateIn([prevLines.size - 1], line => line.push(point))
       );
     });
+    if (controls.clearCanvas === true) {
+      setLineControls([]);
+      setLines(new Immutable.List());
+      controlsDispatch({type: 'UNCLEAR_CANVAS'});
+    }
   return () => {
       socket.off('drawing mouse down');
       socket.off('drawing mouse move');
@@ -43,10 +48,16 @@ const DrawArea = () => {
       controlsDispatch({type: 'BRUSH_SIZE', payload: { control: size}});
     });
 
+    socket.on('clear canvas', () => {  
+      setLines(new Immutable.List());
+      setLineControls([]);
+    });
+
     return () => {
       socket.off('change brush color control');
       socket.off('change background control');
       socket.off('change brush size control');
+      socket.off('clear canvas');
     };
   },[]);
 
@@ -59,7 +70,7 @@ const DrawArea = () => {
   }
 
   const handleMouseMove = (mouseEvent) => {
-    if (isDrawing) {
+    if (isDrawing && lines !== new Immutable.List()) {
       const point = relativeCoordinatesForEvent(mouseEvent);
       setLines(prevLines => 
        prevLines.updateIn([prevLines.size - 1], line => line.push(point))
@@ -87,7 +98,12 @@ const DrawArea = () => {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        style={{ "background": `rgb(${controls.background.r},${controls.background.g},${controls.background.b},${controls.background.a}` }}
+        style={{ "background": `rgb(
+                  ${controls.background.r},
+                  ${controls.background.g},
+                  ${controls.background.b},
+                  ${controls.background.a}`,
+                  "pointerEvents": isCurrentDrawer(players) ? "unset" : "none"  }}
       >
        <Drawing lines={lines} lineControls={lineControls}></Drawing>
       </div>

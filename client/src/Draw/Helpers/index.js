@@ -1,5 +1,6 @@
-import socketIOClient from "socket.io-client";
 import React from 'react';
+import socketIOClient from "socket.io-client";
+import _ from 'lodash';
 
 export const socket = socketIOClient("http://localhost:5000/");
 
@@ -24,20 +25,20 @@ export function controlsReducer(controls, action) {
     	return { ...controls, background: action.payload.control};
     case 'BRUSH_SIZE':
       return { ...controls, brushSize: action.payload.control};
+    case 'CLEAR_CANVAS':
+      return { ...controls, clearCanvas: true};
+    case 'UNCLEAR_CANVAS':
+      return { ...controls, clearCanvas: false};
     default:
       throw new Error();
   }
 }
 
-export const isCurrentDrawerContext = React.createContext(null);
+export const playersContext = React.createContext(null);
 
-export function isCurrentDrawerReducer(isCurrentDrawer, action) {
-  switch (action.type) {
-    case "SET_DRAWER":
-      return isCurrentDrawer = true;
-    case "SET_NOT_DRAWER":
-      return isCurrentDrawer = false;
-    default:
-      throw new Error();
+export const isCurrentDrawer = (players) => {
+  let currentDrawer = players.filter(player => player.drawer);
+  if (!_.isEmpty(currentDrawer)) {
+    return currentDrawer[0].pseudo === selfPlayer.pseudo;
   }
 }

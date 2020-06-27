@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Divider, Form, Input, Button } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
 import { socket, selfPlayer } from '../../Helpers';
+import { Row, Col, Divider, Form, Input, Button } from 'antd';
 import { UserTag } from './../Commons';
-import './Chat.scss';
 import { SendOutlined } from '@ant-design/icons'; 
-
+import './Chat.scss';
 
 const Chat = () => {
 

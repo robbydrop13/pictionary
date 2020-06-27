@@ -152,10 +152,17 @@ io.on("connection", socket => {
 		}
 	});
 
-	socket.on('change brush size control', (color) => {
+	socket.on('change brush size control', (size) => {
     if (currentConnections[socket.id] !== undefined) {
 			console.log("change brush size control");
 			socket.broadcast.emit('change brush size control', size)
+		}
+	});
+
+	socket.on('clear canvas', () => {
+    if (currentConnections[socket.id] !== undefined) {
+			console.log("clear canvas");
+			socket.broadcast.emit('clear canvas')
 		}
 	});
 

@@ -1,42 +1,32 @@
 import React, { useState, useReducer, useEffect } from "react";
-import { Space, Row, Col } from 'antd';
-import _ from 'lodash';
-import './index.scss';
-
-import { socket, selfPlayer, 
-        isCurrentDrawerContext, isCurrentDrawerReducer,
+import { socket, selfPlayer,
+        playersContext,
         controlsContext, controlsReducer } from './Helpers';
-
+import { Space, Row, Col } from 'antd';
+import { UserLabel } from './Components/Commons';
 import DrawControls from './Components/DrawControls'
 import Chat from './Components/Chat'
 import DrawArea from './Components/DrawArea'
 import Rank from './Components/Rank'
 import DrawItem from './Components/DrawItem'
+import './index.scss';
 
 socket.emit('new player', selfPlayer);
 
 const Draw = () => { 
   const [players, setPlayers] = useState([selfPlayer]);
-  const [isCurrentDrawer, isCurrentDrawerDispatch] = useReducer(isCurrentDrawerReducer, false);
 
   const initialControls = { 
     brushColor: { r: 0, g: 0, b: 0, a: 1 }, 
     brushSize: 5,
-    background: { r: 255, g: 255, b: 255, a: 1}
+    background: { r: 255, g: 255, b: 255, a: 1},
+    clearCanvas: false
   };
   const [controls, controlsDispatch] = useReducer(controlsReducer, initialControls);
 
   useEffect(() => {
     socket.on('players update', (liveplayers) => {
       setPlayers(liveplayers);
-      var currentDrawer = liveplayers.filter(player => player.drawer);
-      if (!_.isEmpty(currentDrawer)) {
-        if (currentDrawer[0].pseudo === selfPlayer.pseudo) {
-          isCurrentDrawerDispatch({type: "SET_DRAWER"});
-        } else {
-          isCurrentDrawerDispatch({type: "SET_NOT_DRAWER"});
-        }
-      }
     });
     return () => {
       socket.off('players update');
@@ -45,10 +35,18 @@ const Draw = () => {
 
   return (
     <div className="master-container">
-    <isCurrentDrawerContext.Provider value={isCurrentDrawer}>
+    <playersContext.Provider value={players}>
     <controlsContext.Provider value={{controls, controlsDispatch}}>
       <Row style={{'height':40}}>
-        Hello
+        <Col className="logo" span={4}>
+          Draw
+        </Col>
+        <Col span={4} offset={16}>
+          <div style={{ 'float':'right', 'marginRight':20 }}>
+          <UserLabel user={selfPlayer}>
+          </UserLabel>
+          </div>
+        </Col>
       </Row>
       <Row>
         <Col span={10}>
@@ -59,7 +57,7 @@ const Draw = () => {
                   </DrawItem>
                 </Col>
                 <Col span={10}>
-                  <Rank players={players} >
+                  <Rank players={players}>
                   </Rank>
                 </Col>
               </Row>
@@ -69,18 +67,15 @@ const Draw = () => {
         </Col>
         <Col span={14}>
           <Space direction="vertical" size={0}>
-            <DrawControls 
-              players={players} 
-            >
+            <DrawControls>
             </DrawControls>
-            <DrawArea 
-            >
+            <DrawArea>
             </DrawArea>
           </Space>
         </Col>
       </Row>
     </controlsContext.Provider>
-    </isCurrentDrawerContext.Provider>
+    </playersContext.Provider>
     </div>
   )
 }
