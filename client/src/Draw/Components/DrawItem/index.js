@@ -16,7 +16,7 @@ const ClockContent = ({ remainingTime, word, isCurrentDrawer }) => {
   if (word === "XTRANSITION") {
     return (
       <div className="timer">
-        <div className="waitText">XXX</div>
+        <div className="text">{remainingTime}</div>
       </div>
     );
   }
@@ -40,13 +40,13 @@ const DrawItem = () => {
   const players = useContext(playersContext);
   const {controlsDispatch} = useContext(controlsContext);
 	const [word, setWord] = useState("");
-  const [timer, setTimer] = useState(8);
+  const [timer, setTimer] = useState(9);
   const [countdownKey, setCountdownKey] = useState(1);
-  //const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     socket.on('new word', ({newWord, newTimer}) => {
-      //setIsPlaying(true);
+      setIsPlaying(true);
       setWord(newWord);
       setTimer(newTimer/1000 - 1);
       setCountdownKey(prevCountdownKey => prevCountdownKey + 1);
@@ -59,11 +59,22 @@ const DrawItem = () => {
     };
   }, []);
 
+  // useEffect(() => {
+  //   socket.on('win', () => {
+  //     setWord('XTRANSITION');
+  //     setTimer(4);
+  //     setCountdownKey(prevCountdownKey => prevCountdownKey + 1);
+  //     });
+  //   return () => {
+  //     socket.off('win');
+  //   };
+  // }, []);
+
   return (
 	  <div className="container">
       <div className="timer-wrapper"> 
           <CountdownCircleTimer
-          isPlaying
+          isPlaying={isPlaying}
           duration={timer}
           colors={[['#59DD4D', 0.4], ['#59DD4D', 0.4], ['#EF094E']]}
           key={countdownKey}

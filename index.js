@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 const _ = require('lodash');
 import { v4 as uuidv4 } from 'uuid';
+import { words, gameTimer, transitionTimer, systemSender } from './config.js';
 
 const whitelist = ['http://localhost:3000', 'http://localhost:3000/draw'];
 const corsOptions = {
@@ -26,38 +27,36 @@ const io = socketIO(server);
 //app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
+// init variables
 const currentConnections = {};
 var drawerShortList = {};
-const words = ["dog","cat","bird","fish","boat","car","plane"];
-const timer = 10000;
-var currentWord = "";
-const systemSender = {
-	pseudo: "Draw!",
-  score: 0,
-  drawer: false,
-  color: "primaryBlue",
-}
-
+var word = "";
 
 const selectDrawer = (obj) => {
-    var keys = Object.keys(obj);
-    // Here I pick randomly the next drawer, but it might be better suited to always take 
-    // the same order, for instance with 2 players, to have one after the other.
-    var i = keys.length * Math.random() << 0;
-    var newDrawer = obj[keys[i]];
-    console.log('New drawer ' + newDrawer.player.pseudo);
-    if (keys.length == 1) {
-    	drawerShortList = {...currentConnections};
-    	console.log('reset');
-    } else {
-    	delete drawerShortList[keys[i]];
-    	console.log('pop');
-    }
-    console.log(Object.keys(drawerShortList).length);
-    return newDrawer;
+  var keys = Object.keys(obj);
+  // Here I pick randomly the next drawer, but it might be better suited to always take 
+  // the same order, for instance with 2 players, to have one after the other.
+  var i = keys.length * Math.random() << 0;
+  var newDrawer = obj[keys[i]];
+  console.log('New drawer ' + newDrawer.player.pseudo);
+  if (keys.length == 1) {
+  	drawerShortList = {...currentConnections};
+  	console.log('reset');
+  } else {
+  	delete drawerShortList[keys[i]];
+  	console.log('pop');
+  }
+  console.log(Object.keys(drawerShortList).length);
+  return newDrawer;
 }
 
-const setNewWord = () => {
+const selectWord = (words) => {
+	return words[Math.floor(Math.random() * words.length)]
+}
+
+const startNewGame = () => {
+	// Assign the new drawer and select a new word
+
 	if (!_.isEmpty(currentConnections)) {
 		// Initialization of drawerShortlist the first time 
 		if (_.isEmpty(drawerShortList)) {
@@ -71,27 +70,63 @@ const setNewWord = () => {
 			connection.player.drawer = false
 		);
 	}
-
-	// Select and emit new word to the front
-	currentWord = words[Math.floor(Math.random() * words.length)]
-	io.emit('new word', {
-		newWord: currentWord, 
-		newTimer: timer, 
-	});
-
-	// As a new word comes with a new drawer, player update needs to be sent to the front
+	// As a new game comes with a new drawer, players need to be updated on the front
 	io.emit('players update', Object.values(currentConnections).map(connection => connection.player));
-	io.emit('new message', {
-      id: uuidv4(),
-      sender: systemSender,
-      text: "Victoire!!!",
-    });
-}
+
+	// Select and emit the new word to the front
+	word = selectWord(words);
+	io.emit('new word', {
+		newWord: word, 
+		newTimer: gameTimer, 
+	});
 
 // Variabiliser les message avec une fonction new message (?) 
 // et envoyer les différents messages admin (machin a rejoint, machin a quitté, machin a gagné next drawer is
 
-var newWordTimer = setInterval(setNewWord, timer);
+	// io.emit('new message', {
+	//    id: uuidv4(),
+	//    sender: systemSender,
+	//    text: "Victoire!!!",
+	//  });
+}
+
+const resetWord = () => {
+	return "XTRANSITION";
+}
+
+const finishGame = () => {
+	word=resetWord();
+	io.emit('new word', {
+		newWord: word, 
+		newTimer: transitionTimer, 
+	});
+	io.emit('players update', Object.values(currentConnections).map(connection => connection.player));
+} 
+
+var timeOut;
+const bufferTimeOut = () => {
+  //timeOut = setTimeout(() => {io.emit('win');}, timer);
+  timeOut = setTimeout(() => {finishGame()}, gameTimer);
+}
+
+// First game starts after timer+buffer seconds on the server 
+// (timer should be paused on the front as we don't know when the game starts)
+var newWordTimer = setInterval(() => {
+	startNewGame();
+	bufferTimeOut();
+},gameTimer+transitionTimer);
+
+var timeOutAfterWin;
+const winTimeOut = () => {
+	timeOutAfterWin = setTimeout(() => { 
+		startNewGame();
+		bufferTimeOut();
+		newWordTimer = setInterval(() => {
+			startNewGame();
+			bufferTimeOut();
+		},gameTimer+transitionTimer);
+	}, transitionTimer);
+} 
 
 //Setting up a socket with the namespace "connection" for new sockets
 io.on("connection", socket => {
@@ -115,11 +150,9 @@ io.on("connection", socket => {
 
 		if (currentConnections[socket.id] !== undefined) {
 
-			var playersConnexions = Object.values(currentConnections).map(connection => (connection));
-			console.log(playersConnexions.filter(connexion => connexion.player.drawer));
 			// Drawer and player that guesses right both win points
-			console.log(message);
-			if (message.text.includes(currentWord) 
+			var playersConnexions = Object.values(currentConnections).map(connection => (connection));
+			if (message.text.includes(word) 
 				&& !currentConnections[socket.id].player.drawer 
 				&& !_.isEmpty(playersConnexions.filter(connexion => connexion.player.drawer))) {
 				console.log("winner!");
@@ -128,57 +161,27 @@ io.on("connection", socket => {
 				// Allocating points to the drawer
 				var drawerId = playersConnexions.filter(connexion => connexion.player.drawer)[0].socket.id;
 				currentConnections[drawerId].player.score += 10;
+
+				// As a win comes with new scores, players need to be updated on the front
+				io.emit('players update', Object.values(currentConnections).map(connection => connection.player));
 				
-				setNewWord();
 				clearInterval(newWordTimer);
-				newWordTimer = setInterval(setNewWord, timer);
+				clearTimeout(timeOut);
+				clearTimeout(timeOutAfterWin);
+				//io.emit('win');
+				finishGame();
+				winTimeOut();
+
 			}
+			console.log(message);
 			socket.broadcast.emit('new message', message);
 
 		}
 	});
     
-    socket.on('change brush color control', (color) => {
-    if (currentConnections[socket.id] !== undefined) {
-			console.log("change brush color control");
-			socket.broadcast.emit('change brush color control', color)
-		}
-	});
+    require('./events/drawControls.js')(socket, currentConnections);
 
-    socket.on('change background control', (color) => {
-    if (currentConnections[socket.id] !== undefined) {
-			console.log("change background control");
-			socket.broadcast.emit('change background control', color)
-		}
-	});
-
-	socket.on('change brush size control', (size) => {
-    if (currentConnections[socket.id] !== undefined) {
-			console.log("change brush size control");
-			socket.broadcast.emit('change brush size control', size)
-		}
-	});
-
-	socket.on('clear canvas', () => {
-    if (currentConnections[socket.id] !== undefined) {
-			console.log("clear canvas");
-			socket.broadcast.emit('clear canvas')
-		}
-	});
-
-    socket.on('drawing mouse down', (point) => {
-    if (currentConnections[socket.id] !== undefined) {
-			console.log("drawing mouse down");
-			socket.broadcast.emit('drawing mouse down', point)
-		}
-	});
-
-	socket.on('drawing mouse move', (point) => {
-		if (currentConnections[socket.id] !== undefined) {
-			console.log("drawing mouse move");
-			socket.broadcast.emit('drawing mouse move', point)
-		}
-	});
+    require('./events/draw.js')(socket, currentConnections);
 
     //A special namespace "disconnect" for when a client disconnects
     socket.on("disconnect", () => {
