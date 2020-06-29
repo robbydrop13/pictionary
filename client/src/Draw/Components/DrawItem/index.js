@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { socket, isCurrentDrawer, playersContext, controlsContext } from '../../Helpers';
+import { socket, isCurrentDrawer, playersContext, controlsContext, isGameLiveContext } from '../../Helpers';
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
 import './DrawItem.scss';
 
@@ -16,7 +16,7 @@ const ClockContent = ({ remainingTime, word, isCurrentDrawer }) => {
   if (word === "XTRANSITION") {
     return (
       <div className="timer">
-        <div className="text">{remainingTime}</div>
+        <div className="waitText">You {isCurrentDrawer ? "draw" : "guess"} next</div>
       </div>
     );
   }
@@ -38,6 +38,7 @@ const ClockContent = ({ remainingTime, word, isCurrentDrawer }) => {
 
 const DrawItem = () => {
   const players = useContext(playersContext);
+  const {isGameLive, isGameLiveDispatch} = useContext(isGameLiveContext);
   const {controlsDispatch} = useContext(controlsContext);
 	const [word, setWord] = useState("");
   const [timer, setTimer] = useState(9);
@@ -46,29 +47,23 @@ const DrawItem = () => {
 
   useEffect(() => {
     socket.on('new word', ({newWord, newTimer}) => {
+      if (newWord === "XTRANSITION") {
+        isGameLiveDispatch({type: 'TRANSITION'});
+      } else {
+        isGameLiveDispatch({type: 'LIVE'});
+        controlsDispatch({type: 'CLEAR_CANVAS'});
+      }
       setIsPlaying(true);
       setWord(newWord);
       setTimer(newTimer/1000 - 1);
       setCountdownKey(prevCountdownKey => prevCountdownKey + 1);
-      controlsDispatch({type: 'CLEAR_CANVAS'});
       console.log(newWord);
       console.log(countdownKey);
-      });
+    });
     return () => {
       socket.off('new word');
     };
   }, []);
-
-  // useEffect(() => {
-  //   socket.on('win', () => {
-  //     setWord('XTRANSITION');
-  //     setTimer(4);
-  //     setCountdownKey(prevCountdownKey => prevCountdownKey + 1);
-  //     });
-  //   return () => {
-  //     socket.off('win');
-  //   };
-  // }, []);
 
   return (
 	  <div className="container">

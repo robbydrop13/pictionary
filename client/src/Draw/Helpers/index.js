@@ -34,6 +34,19 @@ export function controlsReducer(controls, action) {
   }
 }
 
+export const isGameLiveContext = React.createContext(null);
+
+export function isGameLiveReducer(isGameLive, action) {
+  switch (action.type) {
+    case 'LIVE':
+      return isGameLive=true;
+    case 'TRANSITION':
+      return isGameLive=false;
+    default:
+      throw new Error();
+  }
+}
+
 export const playersContext = React.createContext(null);
 
 export const isCurrentDrawer = (players) => {

@@ -1,6 +1,8 @@
 import React, { useContext} from "react";
 import _ from 'lodash';
-import { socket, isCurrentDrawer, playersContext, controlsContext } from '../../Helpers';
+import { socket, isCurrentDrawer, 
+		playersContext, controlsContext,
+		isGameLiveContext } from '../../Helpers';
 import { Space, Row, Col, Select, Badge, Button } from 'antd';
 import { ColorPicker, UserTag } from './../Commons';
 import './DrawControls.scss';
@@ -9,6 +11,7 @@ const { Option } = Select;
 
 const DrawControls = () => {
 	const players = useContext(playersContext);
+	const {isGameLive} = useContext(isGameLiveContext);
 	const {controls, controlsDispatch} = useContext(controlsContext);
 	const currentDrawer = players.filter(player => player.drawer);
 
@@ -78,7 +81,7 @@ const DrawControls = () => {
  						{ !_.isEmpty(currentDrawer) && !isCurrentDrawer(players) && 
  							<Space direction="horizontal" align="center">
  								<UserTag user={currentDrawer[0]}></UserTag>
- 								<span style={{ "fontSize":15, "marginLeft": 8}}>{currentDrawer[0].pseudo} is drawing...</span>
+ 								<span style={{ "fontSize":15, "marginLeft": 8}}>{currentDrawer[0].pseudo}{isGameLive ? " is drawing..." : " draws next"}</span>
  							</Space>
  						}
  				</Row>

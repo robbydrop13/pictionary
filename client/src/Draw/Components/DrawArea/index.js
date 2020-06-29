@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Immutable from 'immutable';
-import { socket, isCurrentDrawer, playersContext, controlsContext } from '../../Helpers';
+import { socket, isCurrentDrawer, 
+        playersContext, controlsContext, 
+        isGameLiveContext } from '../../Helpers';
 import './DrawArea.scss';
 
 const DrawArea = () => {
   const players = useContext(playersContext);
+  const {isGameLive} = useContext(isGameLiveContext);
   const {controls, controlsDispatch} = useContext(controlsContext);
   const [lineControls, setLineControls] = useState([]);
   const [lines, setLines] = useState(new Immutable.List());
@@ -103,7 +106,7 @@ const DrawArea = () => {
                   ${controls.background.g},
                   ${controls.background.b},
                   ${controls.background.a}`,
-                  "pointerEvents": isCurrentDrawer(players) ? "unset" : "none"  }}
+                  "pointerEvents": isCurrentDrawer(players) && isGameLive ? "unset" : "none"  }}
       >
        <Drawing lines={lines} lineControls={lineControls}></Drawing>
       </div>

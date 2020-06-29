@@ -21,11 +21,11 @@ const corsOptions = {
 
 const app = express();
 
-const server = http.createServer(app);
-const io = socketIO(server);
-
 //app.use(cors(corsOptions));
 app.use(bodyParser.json());
+
+const server = http.createServer(app);
+const io = socketIO(server);
 
 // init variables
 const currentConnections = {};
@@ -33,12 +33,13 @@ var drawerList = {};
 var word = "";
 var drawer = {};
 
-const selectDrawer = (obj) => {
-  var keys = Object.keys(obj);
+const selectDrawer = () => {
+
+  var keys = Object.keys(drawerList);
   // Here I pick randomly the next drawer, but it might be better suited to always take 
   // the same order, for instance with 2 players, to have one after the other.
   var i = keys.length * Math.random() << 0;
-  var newDrawer = obj[keys[i]];
+  var newDrawer = drawerList[keys[i]];
   console.log('New drawer ' + newDrawer.player.pseudo);
   // Remove drawer from the drawer list or reset drawer list if empty
   if (keys.length == 1) {
@@ -85,7 +86,6 @@ const startNewGame = () => {
 		assignDrawer();
 	}
 	assignWord();
-
 }
 
 const resetWord = () => {
@@ -100,6 +100,19 @@ const finishGame = () => {
 	});
 	assignDrawer();
 } 
+
+const sendSystemMessage = (socket, text) => {
+	var newMessage = {
+	   id: uuidv4(),
+	   sender: systemSender,
+	   text: text,
+	}
+	if (typeof socket === 'undefined') {
+		io.emit('new message', newMessage);
+	} else {
+		socket.broadcast.emit('new message', newMessage);
+	}
+}
 
 var finishTimeOut;
 const finishGameTimeOut = () => {
@@ -140,54 +153,58 @@ io.on("connection", socket => {
 			var players = Object.values(currentConnections).map(connection => connection.player);
 			console.log(players.length + " players online.");
 			io.emit('players update', players);
+			sendSystemMessage(socket, `${player.pseudo} joined the game.`);
 		}
 	});
 
-		//require('./events/messages.js')(socket, currentConnections, word, finishTimeOut, timeOutAfterWin, winTimeOut);
+		// module marche pas car current connections n'est pas modifié ici
+		//require('./events/messages')(socket, currentConnections, word, finishTimeOut, timeOutAfterWin, winTimeOut);
     
     	socket.on('new message', (message) => {
 
 		if (currentConnections[socket.id] !== undefined) {
 
+			console.log(message);
+			socket.broadcast.emit('new message', message);
+
 			// Drawer and player that guesses right both win points
 			var playersConnections = Object.values(currentConnections).map(connection => (connection));
 			if (message.text.includes(word) 
 				&& !currentConnections[socket.id].player.drawer 
-				&& !_.isEmpty(playersConnections.filter(connexion => connexion.player.drawer))) {
+				&& !_.isEmpty(playersConnections.filter(connection => connection.player.drawer))) {
 				console.log("winner!");
 				// Allocating points to the guesser
 				currentConnections[socket.id].player.score += 10;
 				// Allocating points to the drawer
-				var drawerId = playersConnections.filter(connexion => connexion.player.drawer)[0].socket.id;
+				var drawerId = playersConnections.filter(connection => connection.player.drawer)[0].socket.id;
 				currentConnections[drawerId].player.score += 10;
 
 				// As a win comes with new scores, players need to be updated on the front
+				sendSystemMessage(socket, `${currentConnections[socket.id].player.pseudo} won!`);
 				io.emit('players update', Object.values(currentConnections).map(connection => connection.player));
 				
 				clearInterval(newWordTimer);
 				clearTimeout(finishTimeOut);
 				clearTimeout(timeOutAfterWin);
-				//io.emit('win');
 				finishGame();
 				winTimeOut();
 
 			}
-			console.log(message);
-			socket.broadcast.emit('new message', message);
 
 		}
 	});
-    	
-    require('./events/drawControls.js')(socket, currentConnections);
 
-    require('./events/draw.js')(socket, currentConnections);
+    require('./events/drawControls')(socket, currentConnections);
+
+    require('./events/draw')(socket, currentConnections);
 
     socket.on("disconnect", () => {
+    	sendSystemMessage(socket, `${currentConnections[socket.id].player.pseudo} left the game.`);
     	delete currentConnections[socket.id];
     	drawerList = {...currentConnections};
     	var players = Object.values(currentConnections).map(connection => connection.player);
-    	console.log("Client disconnected");
     	io.emit('players update', players);
+    	console.log("Client disconnected");
 	});
 });
 
@@ -195,12 +212,3 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`app running on port ${PORT}`)
 });
-
-// Variabiliser les message avec une fonction new message (?) 
-// et envoyer les différents messages admin (machin a rejoint, machin a quitté, machin a gagné next drawer is
-
-	// io.emit('new message', {
-	//    id: uuidv4(),
-	//    sender: systemSender,
-	//    text: "Victoire!!!",
-	//  });

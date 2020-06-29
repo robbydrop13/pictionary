@@ -1,7 +1,8 @@
 import React, { useState, useReducer, useEffect } from "react";
 import { socket, selfPlayer,
         playersContext,
-        controlsContext, controlsReducer } from './Helpers';
+        controlsContext, controlsReducer,
+        isGameLiveContext, isGameLiveReducer } from './Helpers';
 import { Space, Row, Col } from 'antd';
 import { UserLabel } from './Components/Commons';
 import DrawControls from './Components/DrawControls'
@@ -15,6 +16,7 @@ socket.emit('new player', selfPlayer);
 
 const Draw = () => { 
   const [players, setPlayers] = useState([selfPlayer]);
+  const [isGameLive, isGameLiveDispatch] = useReducer(isGameLiveReducer, true);
 
   const initialControls = { 
     brushColor: { r: 0, g: 0, b: 0, a: 1 }, 
@@ -36,6 +38,7 @@ const Draw = () => {
   return (
     <div className="master-container">
     <playersContext.Provider value={players}>
+    <isGameLiveContext.Provider value={{isGameLive, isGameLiveDispatch}}>
     <controlsContext.Provider value={{controls, controlsDispatch}}>
       <Row style={{'height':40}}>
         <Col className="logo" span={4}>
@@ -75,6 +78,7 @@ const Draw = () => {
         </Col>
       </Row>
     </controlsContext.Provider>
+    </isGameLiveContext.Provider>
     </playersContext.Provider>
     </div>
   )
