@@ -38,7 +38,7 @@ const ClockContent = ({ remainingTime, word, isCurrentDrawer }) => {
 
 const DrawItem = () => {
   const players = useContext(playersContext);
-  const {isGameLive, isGameLiveDispatch} = useContext(isGameLiveContext);
+  const {isGameLiveDispatch} = useContext(isGameLiveContext);
   const {controlsDispatch} = useContext(controlsContext);
 	const [word, setWord] = useState("");
   const [timer, setTimer] = useState(9);

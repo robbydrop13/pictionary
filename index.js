@@ -181,6 +181,7 @@ io.on("connection", socket => {
 
 				// As a win comes with new scores, players need to be updated on the front
 				sendSystemMessage(socket, `${currentConnections[socket.id].player.pseudo} won!`);
+				socket.emit('win');
 				io.emit('players update', Object.values(currentConnections).map(connection => connection.player));
 				
 				clearInterval(newWordTimer);
@@ -199,11 +200,13 @@ io.on("connection", socket => {
     require('./events/draw')(socket, currentConnections);
 
     socket.on("disconnect", () => {
-    	sendSystemMessage(socket, `${currentConnections[socket.id].player.pseudo} left the game.`);
-    	delete currentConnections[socket.id];
-    	drawerList = {...currentConnections};
-    	var players = Object.values(currentConnections).map(connection => connection.player);
-    	io.emit('players update', players);
+    	if (currentConnections[socket.id] !== undefined) {
+	    	sendSystemMessage(socket, `${currentConnections[socket.id].player.pseudo} left the game.`);
+	    	delete currentConnections[socket.id];
+	    	drawerList = {...currentConnections};
+	    	var players = Object.values(currentConnections).map(connection => connection.player);
+	    	io.emit('players update', players);
+    	}
     	console.log("Client disconnected");
 	});
 });

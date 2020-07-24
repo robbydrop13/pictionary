@@ -35,6 +35,15 @@ const Draw = () => {
     };
   }, []);
 
+  useEffect(() => {
+    socket.on('win', () => {
+      alert('win');
+    });
+    return () => {
+      socket.off('win');
+    };
+  }, []);
+
   return (
     <div className="master-container">
     <playersContext.Provider value={players}>

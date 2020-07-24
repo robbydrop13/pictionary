@@ -116,7 +116,7 @@ const DrawArea = () => {
 const Drawing = ({lines, lineControls}) => {
   return (
     <svg className="drawing">
-      {lines && lines.map((line, index) => (
+      {(lines || []).map((line, index) => (
         <DrawingLine key={index} line={line} lineControl={lineControls[index]}/>
       ))}
     </svg>
